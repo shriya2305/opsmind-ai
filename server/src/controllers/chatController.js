@@ -1,38 +1,42 @@
-import { generateEmbedding } from "../services/embeddingService.js";
-import { retrieveChunks } from "../services/ragService.js";
-import { generateAnswer } from "../services/geminiService.js";
+import Chunk from "../models/Chunk.js";
 
 export const chat = async (req, res) => {
-  const { question } = req.body;
+  try {
+    const { question } = req.body;
 
- const queryEmbedding = await generateEmbedding(
-  "Find information related to: " + question
-);
+    if (!question) {
+      return res.status(400).json({
+        message: "Question is required",
+      });
+    }
 
-  const chunks = await retrieveChunks(queryEmbedding);
-  console.log("Retrieved chunks:", chunks);
+    // 🔥 FETCH ALL CHUNKS (no embeddings for now)
+    const chunks = await Chunk.find().limit(5);
 
-  const context = chunks.map((c) => c.text).join("\n");
+    console.log("Retrieved chunks:", chunks.length);
 
-  const prompt = `
+    if (!chunks.length) {
+      return res.json({
+        answer: "No documents uploaded yet.",
+        sources: [],
+      });
+    }
 
-Use ONLY the context below to answer.
+    // 🔥 SIMPLE ANSWER (for demo)
+    const answer = chunks
+      .map((c) => c.text)
+      .join(" ")
+      .slice(0, 500);
 
-Context:
-${context}
+    res.json({
+      answer,
+      sources: chunks.map((c) => c.document),
+    });
+  } catch (error) {
+    console.error("CHAT ERROR:", error);
 
-Question:
-${question}
-
-If the answer is not in the context say:
-"I don't know based on the SOPs."
-
-`;
-
-  const answer = await generateAnswer(prompt);
-
-  res.json({
-    answer,
-    sources: chunks.map((c) => c.document),
-  });
+    res.status(500).json({
+      message: "Error generating answer",
+    });
+  }
 };

@@ -4,10 +4,10 @@ const API = axios.create({
   baseURL: "http://localhost:5000/api",
 });
 
-export const askQuestion = (question) => API.post("/chat", { question });
+API.interceptors.request.use((req) => {
+  const token = localStorage.getItem("token");
+  if (token) req.headers.Authorization = token;
+  return req;
+});
 
-export const uploadFile = (formData) => API.post("/upload", formData);
-
-export const loginUser = (data) => API.post("/auth/login", data);
-
-export const signupUser = (data) => API.post("/auth/signup", data);
+export default API;

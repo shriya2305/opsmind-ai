@@ -33,6 +33,21 @@ exports.createChat = async (req, res) => {
   }
 };
 
+exports.deleteChat = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await Chat.findOneAndDelete({
+      _id: id,
+      userId: req.user.id, // 🔥 security
+    });
+
+    res.json({ msg: "Chat deleted" });
+  } catch (err) {
+    res.status(500).json({ error: "Delete failed" });
+  }
+};
+
 // 🔥 ASK (MAIN RAG + SAVE CHAT)
 exports.ask = async (req, res) => {
   try {

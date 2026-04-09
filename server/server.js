@@ -8,6 +8,14 @@ const app = express();
 connectDB();
 
 app.use(cors());
+const cors = require("cors");
+
+app.use(
+  cors({
+    origin: "*", // allow all (for now)
+  }),
+);
+
 app.use(express.json());
 
 app.use("/api/auth", require("./routes/authRoutes"));
